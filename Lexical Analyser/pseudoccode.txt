@@ -1,0 +1,52 @@
+function token_extractor(String s)
+{
+    tokens=[]
+
+    set keywords={"int","float","long","string","while","if","for","void","using","include","return","main","cout","namespace"};
+    pattern1 = Join of Keywords[i] with "|"
+    pattern2 = "[A-Za-z_][A-Za-z0-9_]"
+    pattern3= "[0-9]"
+    pattern4="<<|>>|==|<=|>=|=|\\+|\\-|\\*|/"
+   pattern5=";|\\(|\\)|\\{|\\}"
+   pattern6="\"[^\"]*\""
+
+   tokenPattern=(pattern1 | pattern2 | patter3 | pattern4 | pattern5 | pattern6)
+
+   matches=[]
+   while(true)
+   {
+    it = RegexMatching(tokenPattern,s)
+    if(it is null) break
+
+    tokens.push(it)
+   }
+
+   return tokens
+}
+
+
+
+function classifier(map mp, String s)
+{
+    set keywords = {
+        "int","float","long","string","while","if","for","void",
+        "using","include","return","main","cout","namespace"
+    };
+
+    set  operators = {
+        "+","-","*","/","^","<<",">>","==","<=",">=","="
+    };
+    set  braces = {"{","}"};
+    set  parentheses = {"(",")"};
+    set  delimiters = {";"}; 
+
+    if(mp.find(s)==false) return;
+    else if(keywords.find(s)==true) mp[s]="keyword"
+    else if(operators.find(s)==true) mp[s]="operator"
+    else if(braces.find(s)==true) mp[s]="brace"
+    else if(parantheses.find(s)==true) mp[s]="parenthesis"
+    else if(delimiter.find(s)==true) mp[s]="delimiter"
+    else if(isNumber(s)) mp[s]="number"
+    else if(length(s)>=2 and s[front]=='"' and s[end]='"') mp[s]="string"
+    else mp[s]="identifier"
+}
