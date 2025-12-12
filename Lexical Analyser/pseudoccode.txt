@@ -1,3 +1,29 @@
+LexicalAnalyzer(filepath fp)
+{
+    if(!(fp.exists()))
+    {
+        print("Invalid File Path")
+        exit()
+    }
+    
+    complete = File_Content_Of(fp)
+    map mp
+
+    tokens=token_extractor(complete)
+
+    for each t in tokens
+    {
+        classifier(mp,t)
+    }
+
+    for each entry in mp
+    {
+        print(mp.key+" "+mp.value)
+    }
+}
+
+
+
 function token_extractor(String s)
 {
     tokens=[]
