@@ -125,9 +125,6 @@ class StateMachine8
         return -1;
     }
 
-
-
-
     bool checker(int ind,int state,string s)
     {
         if(ind==s.length())
@@ -279,7 +276,6 @@ class StateMachine8
             return 1;
         } 
         else if(state==0) return -1;
-        else if(state==1 && stack1.empty()) return -1;
         else if(state==1&&ch=='a'&&stack1.back()=='a') 
         {
             stack1.push_back('a');
@@ -304,7 +300,6 @@ class StateMachine8
             return 3;
         }
         else if(state==2) return -1;
-        else if(state=3&&stack2.empty()) return -1;
         else if(state==3&&ch=='c'&&stack2.back()=='b')
         {
             stack2.pop_back();
