@@ -232,9 +232,7 @@ class StateMachine8
 
             return option1||option2;
         }
-        else if(state==1) return false;
-        else if(state==2&&stack.empty()) return false;
-        else if(state==2&&ch=='b'&&stack.back()=='b')
+        else if(state==1&&ch=='b'&&stack.back()=='b')
         {
             int ns=1;
             vector<char> st_buffer=stack;
@@ -255,6 +253,9 @@ class StateMachine8
 
             return option1||option2||option3;
         }
+        else if(state==1) return false;
+        else if(state==2&&stack.empty()) return false;
+        
 
 
         return false;
