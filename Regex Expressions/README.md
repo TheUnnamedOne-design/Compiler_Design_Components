@@ -54,3 +54,39 @@ Compile any source file using a standard C++ compiler:
 ```bash
 g++ filename.cpp -o filename
 ./filename
+
+---
+
+I. REGULAR EXPRESSIONS 
+
+1. Write a regex to extract all numbers from a given string. 
+
+2. Write a regex to check if a string starts with an uppercase letter. 
+
+3. Write a regex to validate a strong password containing uppercase, lowercase, digits, and a special character. 
+
+4. Write a regex to extract all hashtags from a sentence. 
+
+II. C++ STRING ACCEPTANCE PROGRAMS 
+
+5. Write a C++ program to check whether the string is accepted or not – the string comprises zero or more occurrences of a and b and ends with b. 
+
+6. Write a C++ program to check whether the string is accepted or not – the string contains only a and b and must start with a. 
+
+7. Write a C++ program to check whether the string is accepted or not – the string contains one or more a’s followed by one or more b’s (pattern: a⁺b⁺). 
+
+8. Write a C++ program to check whether the string is accepted or not – the string contains equal number of a’s and b’s. 
+
+III. ADVANCED STRING PATTERN PROGRAMS 
+
+9. Palindromic String Check (over {a, b}) 
+
+Write a C++ program to check whether the string is accepted or not – the string must be a palindrome and should contain only a and b. 
+
+10. Balanced Pattern aⁿbⁿcⁿ (Equal Count Constraint) 
+
+Write a C++ program to check whether the string is accepted or not – the string must contain equal numbers of a’s, b’s, and c’s in sequence (pattern aⁿbⁿcⁿ, where n ≥ 1). 
+
+11. String Accepted Only if a Appears Before b and b Appears Before c 
+
+Write a C++ program to check whether the string is accepted or not – the string can have any number of a’s, followed by any number of b’s, followed by any number of c’s, but no other order is allowed. 
