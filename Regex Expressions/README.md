@@ -54,8 +54,11 @@ Compile any source file using a standard C++ compiler:
 ```bash
 g++ filename.cpp -o filename
 ./filename
+```
 
 ---
+
+## Questions
 
 I. REGULAR EXPRESSIONS 
 
