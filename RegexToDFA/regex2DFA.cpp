@@ -233,16 +233,31 @@ void printFollowpos()
 
 int main()
 {
-    string infix="(a|b)*a(a|b)(a|b)#";
+    vector<string> regexes = {
+        "(a|b)*a(a|b)(a|b)#",
+        "(a|b)*a(a|b)*#",
+        "(a|b)*|(ab)*#"
+    };
 
-    infix=insertConcat(infix);
-    string postfix=infixToPostfix(infix);
+    for(int i=0;i<regexes.size();i++)
+    {
+        followpos.clear();
 
-    Node* root=buildSyntaxTree(postfix);
+        cout<<"\n=============================\n";
+        cout<<"REGEX "<<i+1<<" : "<<regexes[i]<<"\n";
+        cout<<"=============================\n";
 
-    AssignData(root);
-    computeFollowpos(root);
+        string infix = insertConcat(regexes[i]);
+        string postfix = infixToPostfix(infix);
 
-    preorder(root);
-    printFollowpos();
+        cout<<"Postfix : "<<postfix<<"\n\n";
+
+        Node* root = buildSyntaxTree(postfix);
+
+        AssignData(root);
+        computeFollowpos(root);
+
+        preorder(root);
+        printFollowpos();
+    }
 }
