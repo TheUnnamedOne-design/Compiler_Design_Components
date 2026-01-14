@@ -8,6 +8,7 @@
 #include<unordered_set>
 #include<iomanip>
 #include<set>
+#include<stack>
 using namespace std;
 
 
@@ -120,144 +121,171 @@ unordered_map<string,unordered_set<string>> first_sets(unordered_map<string,vect
 }
 
 
-unordered_set<string> follow(unordered_set<string> terminals,unordered_set<string> non_terminals,string character,unordered_map<string,vector<string>> mp, unordered_map<string,unordered_set<string>>& memo, unordered_map<string,unordered_set<string>>& first_map)
-{
-    
-    if(memo.find(character) != memo.end())
-    {
-        return memo[character];
-    }
-    
-    unordered_set<string> follow_set;
-    
-    
-    if(character == start)
-    {
-        follow_set.insert("$");
-    }
-    
-    
-    for(auto& prod_entry : mp)
-    {
-        string lhs = prod_entry.first;
-        vector<string> productions = prod_entry.second;
-        
-        for(auto& production : productions)
-        {
-            
-            size_t pos = 0;
-            while(pos < production.length())
-            {
-                
-                bool found = false;
-                if(pos < production.length() && production.substr(pos, character.length()) == character)
-                {
-                    
-                    if(pos + character.length() == production.length() || 
-                       non_terminals.find(string(1, production[pos + character.length()])) != non_terminals.end() ||
-                       terminals.find(string(1, production[pos + character.length()])) != terminals.end())
-                    {
-                        found = true;
-                    }
-                }
-                
-                if(found)
-                {
-                    
-                    string beta = production.substr(pos + character.length());
-                    
-                    if(beta.empty())
-                    {
-                        
-                        if(lhs != character) 
-                        {
-                            unordered_set<string> follow_lhs = follow(terminals, non_terminals, lhs, mp, memo, first_map);
-                            follow_set.insert(follow_lhs.begin(), follow_lhs.end());
-                        }
-                    }
-                    else
-                    {
-                       
-                        string beta_first_symbol = "";
-                        
-                        
-                        bool beta_is_terminal = false;
-                        for(auto& term : terminals)
-                        {
-                            if(beta.find(term) == 0)
-                            {
-                                beta_first_symbol = term;
-                                beta_is_terminal = true;
-                                break;
-                            }
-                        }
-                        
-                        
-                        if(!beta_is_terminal)
-                        {
-                            beta_first_symbol = string(1, beta[0]);
-                        }
-                        
-                        
-                        if(first_map.find(beta_first_symbol) != first_map.end())
-                        {
-                            unordered_set<string> first_beta = first_map[beta_first_symbol];
-                            bool has_null = false;
-                            
-                            for(auto& sym : first_beta)
-                            {
-                                if(sym != "null")
-                                {
-                                    follow_set.insert(sym);
-                                }
-                                else
-                                {
-                                    has_null = true;
-                                }
-                            }
-                            
-                            
-                            if(has_null && lhs != character)
-                            {
-                                unordered_set<string> follow_lhs = follow(terminals, non_terminals, lhs, mp, memo, first_map);
-                                follow_set.insert(follow_lhs.begin(), follow_lhs.end());
-                            }
-                        }
-                        else if(beta_is_terminal)
-                        {
-                            follow_set.insert(beta_first_symbol);
-                        }
-                    }
-                    
-                    pos += character.length();
-                }
-                else
-                {
-                    pos++;
-                }
-            }
-        }
-    }
-    
-    memo[character] = follow_set;
-    return follow_set;
-}
-
-
-
 unordered_map<string,unordered_set<string>> follow_sets(unordered_map<string,vector<string>> &mp)
 {
     
     unordered_map<string,unordered_set<string>> first_map = first_sets(mp);
     
     unordered_map<string,unordered_set<string>> follow_map;
-    unordered_map<string,unordered_set<string>> memo;
     
-    for(auto it:mp)
+    for(auto& nt : non_terminals)
     {
-        string character=it.first;
-        follow_map[character]=follow(terminals,non_terminals,character,mp,memo,first_map);
+        follow_map[nt] = unordered_set<string>();
     }
+    
+    follow_map[start].insert("$");
+    
+    bool changed = true;
+    while(changed)
+    {
+        changed = false;
+        
+        for(auto& prod_entry : mp)
+        {
+            string lhs = prod_entry.first;
+            vector<string> productions = prod_entry.second;
+            
+            for(auto& production : productions)
+            {
+                size_t pos = 0;
+                while(pos < production.length())
+                {
+                    bool found = false;
+                    size_t match_len = 0;
+                    string matched_nt = "";
+                    
+                    for(auto& nt : non_terminals)
+                    {
+                        if(pos + nt.length() <= production.length() && production.substr(pos, nt.length()) == nt)
+                        {
+                            found = true;
+                            match_len = nt.length();
+                            matched_nt = nt;
+                            break;
+                        }
+                    }
+                    
+                    if(found)
+                    {
+                        string beta = production.substr(pos + match_len);
+                        
+                        if(beta.empty())
+                        {
+                            size_t old_size = follow_map[matched_nt].size();
+                            follow_map[matched_nt].insert(follow_map[lhs].begin(), follow_map[lhs].end());
+                            if(follow_map[matched_nt].size() > old_size)
+                            {
+                                changed = true;
+                            }
+                        }
+                        else
+                        {
+                            bool all_nullable = true;
+                            size_t beta_pos = 0;
+                            
+                            while(beta_pos < beta.length())
+                            {
+                                string beta_symbol = "";
+                                bool beta_is_terminal = false;
+                                
+                                for(auto& term : terminals)
+                                {
+                                    if(beta_pos + term.length() <= beta.length() && beta.substr(beta_pos, term.length()) == term)
+                                    {
+                                        beta_symbol = term;
+                                        beta_is_terminal = true;
+                                        break;
+                                    }
+                                }
+                                
+                                if(!beta_is_terminal)
+                                {
+                                    for(auto& nt : non_terminals)
+                                    {
+                                        if(beta_pos + nt.length() <= beta.length() && beta.substr(beta_pos, nt.length()) == nt)
+                                        {
+                                            beta_symbol = nt;
+                                            break;
+                                        }
+                                    }
+                                }
+                                
+                                if(beta_symbol.empty())
+                                {
+                                    break;
+                                }
+                                
+                                if(beta_is_terminal)
+                                {
+                                    if(follow_map[matched_nt].find(beta_symbol) == follow_map[matched_nt].end())
+                                    {
+                                        follow_map[matched_nt].insert(beta_symbol);
+                                        changed = true;
+                                    }
+                                    all_nullable = false;
+                                    break;
+                                }
+                                else
+                                {
+                                    if(first_map.find(beta_symbol) != first_map.end())
+                                    {
+                                        unordered_set<string> first_beta = first_map[beta_symbol];
+                                        bool has_null = false;
+                                        
+                                        for(auto& sym : first_beta)
+                                        {
+                                            if(sym != "null")
+                                            {
+                                                if(follow_map[matched_nt].find(sym) == follow_map[matched_nt].end())
+                                                {
+                                                    follow_map[matched_nt].insert(sym);
+                                                    changed = true;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                has_null = true;
+                                            }
+                                        }
+                                        
+                                        if(!has_null)
+                                        {
+                                            all_nullable = false;
+                                            break;
+                                        }
+                                    }
+                                    else
+                                    {
+                                        all_nullable = false;
+                                        break;
+                                    }
+                                }
+                                
+                                beta_pos += beta_symbol.length();
+                            }
+                            
+                            if(all_nullable)
+                            {
+                                size_t old_size = follow_map[matched_nt].size();
+                                follow_map[matched_nt].insert(follow_map[lhs].begin(), follow_map[lhs].end());
+                                if(follow_map[matched_nt].size() > old_size)
+                                {
+                                    changed = true;
+                                }
+                            }
+                        }
+                        
+                        pos += match_len;
+                    }
+                    else
+                    {
+                        pos++;
+                    }
+                }
+            }
+        }
+    }
+    
     return follow_map;
 }
 
@@ -274,23 +302,86 @@ map<pair<string,string>,string> create_parsing_table(unordered_map<string,vector
         {
             unordered_set<string> first_prod;
             
-            bool is_terminal = false;
-            for(auto& term : terminals)
+            if(production == "null")
             {
-                if(production.find(term) == 0)
-                {
-                    first_prod.insert(term);
-                    is_terminal = true;
-                    break;
-                }
+                first_prod.insert("null");
             }
-            
-            if(!is_terminal && !production.empty())
+            else
             {
-                string first_symbol = string(1, production[0]);
-                if(first_map.find(first_symbol) != first_map.end())
+                size_t prod_pos = 0;
+                bool found_first = false;
+                
+                while(prod_pos < production.length() && !found_first)
                 {
-                    first_prod = first_map[first_symbol];
+                    string prod_symbol = "";
+                    bool is_terminal = false;
+                    
+                    for(auto& term : terminals)
+                    {
+                        if(prod_pos + term.length() <= production.length() && production.substr(prod_pos, term.length()) == term)
+                        {
+                            prod_symbol = term;
+                            is_terminal = true;
+                            break;
+                        }
+                    }
+                    
+                    if(!is_terminal)
+                    {
+                        for(auto& nt : non_terminals)
+                        {
+                            if(prod_pos + nt.length() <= production.length() && production.substr(prod_pos, nt.length()) == nt)
+                            {
+                                prod_symbol = nt;
+                                break;
+                            }
+                        }
+                    }
+                    
+                    if(prod_symbol.empty())
+                    {
+                        break;
+                    }
+                    
+                    if(is_terminal)
+                    {
+                        first_prod.insert(prod_symbol);
+                        found_first = true;
+                    }
+                    else
+                    {
+                        if(first_map.find(prod_symbol) != first_map.end())
+                        {
+                            bool has_null_in_first = false;
+                            for(auto& sym : first_map[prod_symbol])
+                            {
+                                if(sym != "null")
+                                {
+                                    first_prod.insert(sym);
+                                }
+                                else
+                                {
+                                    has_null_in_first = true;
+                                }
+                            }
+                            
+                            if(!has_null_in_first)
+                            {
+                                found_first = true;
+                            }
+                        }
+                        else
+                        {
+                            found_first = true;
+                        }
+                    }
+                    
+                    prod_pos += prod_symbol.length();
+                }
+                
+                if(!found_first)
+                {
+                    first_prod.insert("null");
                 }
             }
             
@@ -307,7 +398,7 @@ map<pair<string,string>,string> create_parsing_table(unordered_map<string,vector
                 }
             }
             
-            if(has_null || production == "null")
+            if(has_null)
             {
                 if(follow_map.find(non_term) != follow_map.end())
                 {
@@ -370,6 +461,170 @@ void display_parsing_table(map<pair<string,string>,string> &parse_table, unorder
     }
 }
 
+vector<string> tokenize_input(string input)
+{
+    vector<string> tokens;
+    string current = "";
+    
+    for(int i = 0; i < input.length(); i++)
+    {
+        string ch(1, input[i]);
+        
+        if(terminals.find(ch) != terminals.end())
+        {
+            if(!current.empty())
+            {
+                tokens.push_back(current);
+                current = "";
+            }
+            tokens.push_back(ch);
+        }
+        else if(input[i] != ' ')
+        {
+            current += input[i];
+        }
+        else
+        {
+            if(!current.empty())
+            {
+                tokens.push_back(current);
+                current = "";
+            }
+        }
+    }
+    
+    if(!current.empty())
+    {
+        tokens.push_back(current);
+    }
+    
+    return tokens;
+}
+
+bool parse_string(string input, map<pair<string,string>,string> &parse_table, unordered_map<string,vector<string>> &mp)
+{
+    vector<string> tokens = tokenize_input(input);
+    tokens.push_back("$");
+    
+    stack<string> parse_stack;
+    parse_stack.push("$");
+    parse_stack.push(start);
+    
+    int token_index = 0;
+    
+    cout << endl << "Parsing Steps:" << endl;
+    cout << setw(20) << "Stack" << " | " << setw(20) << "Input" << " | " << setw(30) << "Action" << endl;
+    cout << string(80, '-') << endl;
+    
+    while(!parse_stack.empty())
+    {
+        string stack_display = "";
+        stack<string> temp_stack = parse_stack;
+        vector<string> stack_elements;
+        while(!temp_stack.empty())
+        {
+            stack_elements.push_back(temp_stack.top());
+            temp_stack.pop();
+        }
+        for(int i = stack_elements.size() - 1; i >= 0; i--)
+        {
+            stack_display += stack_elements[i];
+        }
+        
+        string input_display = "";
+        for(int i = token_index; i < tokens.size(); i++)
+        {
+            input_display += tokens[i];
+        }
+        
+        string top = parse_stack.top();
+        string current_token = tokens[token_index];
+        
+        if(top == "$" && current_token == "$")
+        {
+            cout << setw(20) << stack_display << " | " << setw(20) << input_display << " | " << setw(30) << "Accept" << endl;
+            return true;
+        }
+        else if(terminals.find(top) != terminals.end() || top == "$")
+        {
+            if(top == current_token)
+            {
+                cout << setw(20) << stack_display << " | " << setw(20) << input_display << " | " << setw(30) << "Match " + top << endl;
+                parse_stack.pop();
+                token_index++;
+            }
+            else
+            {
+                cout << setw(20) << stack_display << " | " << setw(20) << input_display << " | " << setw(30) << "Error: Mismatch" << endl;
+                return false;
+            }
+        }
+        else if(non_terminals.find(top) != non_terminals.end() || non_terminals.find(string(1, top[0])) != non_terminals.end())
+        {
+            if(parse_table.find({top, current_token}) != parse_table.end())
+            {
+                string production = parse_table[{top, current_token}];
+                cout << setw(20) << stack_display << " | " << setw(20) << input_display << " | " << setw(30) << top + "->" + production << endl;
+                
+                parse_stack.pop();
+                
+                if(production != "null")
+                {
+                    for(int i = production.length() - 1; i >= 0; i--)
+                    {
+                        bool found = false;
+                        
+                        for(auto& non_term : non_terminals)
+                        {
+                            if(i >= non_term.length() - 1)
+                            {
+                                string substr = production.substr(i - non_term.length() + 1, non_term.length());
+                                if(substr == non_term)
+                                {
+                                    parse_stack.push(non_term);
+                                    i -= (non_term.length() - 1);
+                                    found = true;
+                                    break;
+                                }
+                            }
+                        }
+                        
+                        if(!found)
+                        {
+                            for(auto& term : terminals)
+                            {
+                                if(i >= term.length() - 1)
+                                {
+                                    string substr = production.substr(i - term.length() + 1, term.length());
+                                    if(substr == term)
+                                    {
+                                        parse_stack.push(term);
+                                        i -= (term.length() - 1);
+                                        found = true;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else
+            {
+                cout << setw(20) << stack_display << " | " << setw(20) << input_display << " | " << setw(30) << "Error: No production" << endl;
+                return false;
+            }
+        }
+        else
+        {
+            cout << setw(20) << stack_display << " | " << setw(20) << input_display << " | " << setw(30) << "Error: Invalid symbol" << endl;
+            return false;
+        }
+    }
+    
+    return false;
+}
+
 
 
 int main()
@@ -402,6 +657,12 @@ int main()
 
 
     eliminate_left_recursion(production_map);
+    
+    for(auto &it:production_map)
+    {
+        non_terminals.insert(it.first);
+    }
+    
     map<string,vector<string>> production_map2(production_map.begin(),production_map.end());
     cout<<endl;
     cout<<"eliminated left recursion"<<endl;
@@ -445,5 +706,22 @@ int main()
     cout<<endl;
     cout<<"Parsing Table:"<<endl;
     display_parsing_table(parsing_table, production_map);
+    
+    cout<<endl;
+    string input_string;
+    cout<<"Enter input string to parse: ";
+    getline(cin, input_string);
+    
+    bool result = parse_string(input_string, parsing_table, production_map);
+    
+    cout<<endl;
+    if(result)
+    {
+        cout<<"String is ACCEPTED"<<endl;
+    }
+    else
+    {
+        cout<<"String is REJECTED"<<endl;
+    }
     
 }
