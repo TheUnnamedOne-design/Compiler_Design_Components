@@ -2,9 +2,12 @@
 #include<cmath>
 #include<regex>
 #include<unordered_map>
+#include<map>
 #include<vector>
 #include<iterator>
 #include<unordered_set>
+#include<iomanip>
+#include<set>
 using namespace std;
 
 
@@ -258,6 +261,115 @@ unordered_map<string,unordered_set<string>> follow_sets(unordered_map<string,vec
     return follow_map;
 }
 
+map<pair<string,string>,string> create_parsing_table(unordered_map<string,vector<string>> &mp, unordered_map<string,unordered_set<string>> &first_map, unordered_map<string,unordered_set<string>> &follow_map)
+{
+    map<pair<string,string>,string> parse_table;
+    
+    for(auto& prod_entry : mp)
+    {
+        string non_term = prod_entry.first;
+        vector<string> productions = prod_entry.second;
+        
+        for(auto& production : productions)
+        {
+            unordered_set<string> first_prod;
+            
+            bool is_terminal = false;
+            for(auto& term : terminals)
+            {
+                if(production.find(term) == 0)
+                {
+                    first_prod.insert(term);
+                    is_terminal = true;
+                    break;
+                }
+            }
+            
+            if(!is_terminal && !production.empty())
+            {
+                string first_symbol = string(1, production[0]);
+                if(first_map.find(first_symbol) != first_map.end())
+                {
+                    first_prod = first_map[first_symbol];
+                }
+            }
+            
+            bool has_null = false;
+            for(auto& symbol : first_prod)
+            {
+                if(symbol != "null")
+                {
+                    parse_table[{non_term, symbol}] = production;
+                }
+                else
+                {
+                    has_null = true;
+                }
+            }
+            
+            if(has_null || production == "null")
+            {
+                if(follow_map.find(non_term) != follow_map.end())
+                {
+                    for(auto& follow_symbol : follow_map[non_term])
+                    {
+                        parse_table[{non_term, follow_symbol}] = production;
+                    }
+                }
+            }
+        }
+    }
+    
+    return parse_table;
+}
+
+void display_parsing_table(map<pair<string,string>,string> &parse_table, unordered_map<string,vector<string>> &mp)
+{
+    set<string> all_terminals;
+    for(auto& term : terminals)
+    {
+        if(term != "null")
+        {
+            all_terminals.insert(term);
+        }
+    }
+    all_terminals.insert("$");
+    
+    vector<string> ordered_non_terminals;
+    map<string,vector<string>> ordered_map(mp.begin(), mp.end());
+    for(auto& entry : ordered_map)
+    {
+        ordered_non_terminals.push_back(entry.first);
+    }
+    
+    cout << setw(10) << "";
+    for(auto& term : all_terminals)
+    {
+        cout << setw(15) << term;
+    }
+    cout << endl;
+    
+    cout << string(10 + all_terminals.size() * 15, '-') << endl;
+    
+    for(auto& non_term : ordered_non_terminals)
+    {
+        cout << setw(10) << non_term;
+        for(auto& term : all_terminals)
+        {
+            if(parse_table.find({non_term, term}) != parse_table.end())
+            {
+                string production = non_term + "->" + parse_table[{non_term, term}];
+                cout << setw(15) << production;
+            }
+            else
+            {
+                cout << setw(15) << "";
+            }
+        }
+        cout << endl;
+    }
+}
+
 
 
 int main()
@@ -328,5 +440,10 @@ int main()
         }
         cout<<endl;
     }
+    
+    map<pair<string,string>,string> parsing_table = create_parsing_table(production_map, first_sets_productions, follow_sets_productions);
+    cout<<endl;
+    cout<<"Parsing Table:"<<endl;
+    display_parsing_table(parsing_table, production_map);
     
 }
