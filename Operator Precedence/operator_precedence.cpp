@@ -55,6 +55,12 @@ void findTrailing(char nt) {
 
 int main() {
 
+    cout << "Production 1\n";
+
+    grammar.clear();
+    leading.clear();
+    trailing.clear();
+
     grammar['E'] = {
         "E+E",
         "E-E",
@@ -67,13 +73,51 @@ int main() {
     findLeading('E');
     findTrailing('E');
 
-    cout << "LEADING(E) = { ";
+    cout << "LEADING(E) : ";
     for (char c : leading['E']) cout << c << " ";
-    cout << "}\n";
+    cout << "\n";
 
-    cout << "TRAILING(E) = { ";
+    cout << "TRAILING(E) : ";
     for (char c : trailing['E']) cout << c << " ";
-    cout << "}\n";
+    cout << "\n\n";
+
+
+    cout << "Production 2\n";
+
+    grammar.clear();
+    leading.clear();
+    trailing.clear();
+
+    grammar['S'] = {
+        "(L)",
+        "a"
+    };
+
+    grammar['L'] = {
+        "L,S",
+        "S"
+    };
+
+    findLeading('S');
+    findLeading('L');
+    findTrailing('S');
+    findTrailing('L');
+
+    cout << "LEADING(S) : ";
+    for (char c : leading['S']) cout << c << " ";
+    cout << "\n";
+
+    cout << "TRAILING(S) : ";
+    for (char c : trailing['S']) cout << c << " ";
+    cout << "\n";
+
+    cout << "LEADING(L) : ";
+    for (char c : leading['L']) cout << c << " ";
+    cout << "\n";
+
+    cout << "TRAILING(L) : ";
+    for (char c : trailing['L']) cout << c << " ";
+    cout << "\n";
 
     return 0;
 }

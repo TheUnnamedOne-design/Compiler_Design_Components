@@ -234,9 +234,7 @@ void printFollowpos()
 int main()
 {
     vector<string> regexes = {
-        "(a|b)*a(a|b)(a|b)#",
-        "(a|b)*a(a|b)*#",
-        "(a|b)*|(ab)*#"
+        "(x|z)*(zy|zz)(x|y|z)*(x|z)#"
     };
 
     for(int i=0;i<regexes.size();i++)
