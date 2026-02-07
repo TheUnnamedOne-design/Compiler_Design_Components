@@ -1,0 +1,30 @@
+#include <stdio.h>
+
+int main() {
+    int a = 10, b = 20, c = 0;
+
+    // Testing Logical AND (&&)
+    if (a > 5 && b > 15) {
+        printf("Both conditions are true\n");
+    }
+
+    // Testing Logical OR (||)
+    if (a > 100 || b == 20) {
+        printf("At least one condition is true\n");
+    }
+
+    // Testing Logical NOT (!)
+    if (!c) {
+        printf("c is zero, so !c is true\n");
+    }
+
+    /* Testing edge cases: 
+       The ! in != should NOT be caught as a Logical NOT 
+       if your Lex program handles Relational Operators.
+    */
+    if (a != b) {
+        printf("a is not equal to b\n");
+    }
+
+    return 0;
+}
