@@ -1,3 +1,6 @@
 *.exe
 tempCodeRunnerFile.cpp
 .qodo
+
+*.yy.c
+*.out

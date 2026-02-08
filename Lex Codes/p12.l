@@ -1,23 +1,22 @@
 %{
 #include<stdio.h>
-int integers=0;
-int floats=0;
+#include <ctype.h> 
+int lowers=0;
+int uppers=0;
 %}
 
 %%
-"//".* {}
-"/*"([^*]|\*+[^*/])*"*/" {}
-"&&" {printf("Logical AND : %s\n",yytext);}
-"||" {printf("Logical OR : %s\n",yytext);}
-"!" {printf("Logical NOT : %s\n",yytext);}
-"==" {printf("Relational Equal to : %s\n",yytext);}
-"!=" {printf("Relational Not equal to : %s\n",yytext);}
-"<=" {printf("Relational Less than or equal to : %s\n",yytext);}
-">=" {printf("Relational Greater than or equal to : %s\n",yytext);}
-"<" {printf("Relational Less than : %s\n",yytext);}
-">" {printf("Relational Greater than : %s\n",yytext);}
-. {}
-.|\n {}
+[a-z] {
+    lowers++;
+}
+
+[A-Z] {
+    uppers++;
+}
+
+. {
+    printf("%s", yytext);
+}
 %%
 
 int yywrap()
@@ -28,5 +27,7 @@ int yywrap()
 int main()
 {
     yylex();
+    printf("lowers count : %d\n",lowers);
+    printf("uppers count : %d\n",uppers);
     return 0;
 }

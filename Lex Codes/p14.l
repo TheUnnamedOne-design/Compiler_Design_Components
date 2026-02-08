@@ -1,26 +1,26 @@
 %{
-#include <stdio.h>
+#include<stdio.h>
+int email_count = 0;
 %}
 
-/* Definitions */
-VALID_ID   [a-zA-Z_][a-zA-Z0-9_]*
-INVALID_ID [0-9][a-zA-Z0-9_]*
-
+%%
+[a-zA-Z0-9._+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,} {
+    printf("Email ID found: %s\n", yytext);
+    email_count++;
+}
+. {}
+\n {}
 %%
 
-{VALID_ID}      { printf("Valid Identifier: %s\n", yytext); }
-{INVALID_ID}    { printf("Invalid Identifier (starts with digit): %s\n", yytext); }
-[ \t\n]         {}
-.               { printf("Invalid Character/Identifier: %s\n", yytext); }
-
-%%
-
-int yywrap() {
+int yywrap()
+{
     return 1;
 }
 
-int main() {
-    printf("Enter identifiers to validate (Ctrl+D to exit):\n");
+int main()
+{
+    printf("Enter text (Press Ctrl+D to end):\n");
     yylex();
+    printf("\nTotal email IDs found: %d\n", email_count);
     return 0;
 }
