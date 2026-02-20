@@ -231,21 +231,29 @@ int main() {
     while (!stateQueue.empty()) {
         State currentState = stateQueue.front();
         stateQueue.pop();
+        
+        int currentStateNum = states.getStateNum(currentState);
 
         unordered_set<char> symbols = getSymbols(currentState);
 
         for (char symbol : symbols) {
             State newState = computeGoto(currentState, symbol, grammar, non_terminals);
 
-            if (!newState.items.empty() && !states.find(newState)) {
-                states.add(newState, stateCounter);
-                stateCounter++;
-                stateQueue.push(newState);
+            if (!newState.items.empty()) {
+                if (!states.find(newState)) {
+                    cout << "GOTO(I" << currentStateNum << ", " << symbol << ") = I" << stateCounter << " (NEW STATE)\n";
+                    states.add(newState, stateCounter);
+                    stateCounter++;
+                    stateQueue.push(newState);
+                } else {
+                    int existingStateNum = states.getStateNum(newState);
+                    cout << "GOTO(I" << currentStateNum << ", " << symbol << ") = I" << existingStateNum << " (EXISTING STATE)\n";
+                }
             }
         }
     }   
 
-    cout << "LR(0) States:\n";
+    cout << "\nLR(0) States:\n";
     cout << "=============\n\n";
     states.print();
 
