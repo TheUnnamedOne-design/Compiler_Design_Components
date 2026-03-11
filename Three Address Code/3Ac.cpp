@@ -4,6 +4,20 @@
 #include<unordered_map>
 using namespace std;
 
+class threeAC
+{
+    public:
+    string left,o1,o2;
+    char op;
+    threeAC(string left,string o1,char o, string o2)
+    {
+        this->left=left;
+        this->o1=o1;
+        this->o2=o2;
+        this->op=o;
+    }
+};
+
 int priority(char a,char b)
 {
     unordered_map<char,int> mp={{'^',10},{'/',8},{'*',8},{'%',8},{'+',5},{'-',5},{'(',1}};
@@ -96,11 +110,11 @@ vector<string> postfix(string s)
 }
 
 
-void EvaluateTo3AC(vector<string> ex,string left)
+vector<threeAC> EvaluateTo3AC(vector<string> ex,string left)
 {
     int mult=0;
     stack<string> st;
-
+    vector<threeAC> arr;
     int tempCtr=1;
 
     for(auto it:ex)
@@ -114,8 +128,17 @@ void EvaluateTo3AC(vector<string> ex,string left)
             if(isalpha(it[0]))
             {
                 string value=it;
-                if(mult==1) value="-"+value;
-                st.push(value);
+                string temp=it;
+                if(mult==1) 
+                {
+                    value="-"+value;
+                    temp="t"+to_string(tempCtr);
+                    tempCtr++;
+    
+                    threeAC obj=threeAC(temp,value,'\0',"");
+                    arr.push_back(obj);
+                }
+                st.push(temp);
             }
             else if(isOp(it[0]))
             {
@@ -127,14 +150,17 @@ void EvaluateTo3AC(vector<string> ex,string left)
 
                 string temp="t"+to_string(tempCtr);
                 tempCtr++;
-                cout<<temp<<" = "<<v2<<" "+it<<" "<<v1<<endl;
 
+                threeAC obj=threeAC(temp,v2,it[0],v1);
+                arr.push_back(obj);
                 st.push(temp);
             }
             mult=0;
         }
     }
-    cout<<left<<" = t"<<to_string(tempCtr);
+    threeAC obj=threeAC(left,"t"+to_string(tempCtr),'\0',"");
+    arr.push_back(obj);
+    return arr;
 }
 
 void three_AC(string s)
@@ -153,7 +179,11 @@ void three_AC(string s)
         cout<<it<<" ";
     }
     cout<<endl;
-    EvaluateTo3AC(ex,left);
+    vector<threeAC> arr=EvaluateTo3AC(ex,left);
+    for(auto it:arr)
+    {
+        cout<<it.left<<" = "<<it.o1<<" "<<it.op<<" "<<it.o2<<endl;
+    }
     cout<<endl;
     //cout<<"HELLO";
 }
@@ -161,7 +191,7 @@ void three_AC(string s)
 void Jump3AC(string s)
 {
      cout<<"Expression : "<<s<<endl;
-     
+
 }
 
 
